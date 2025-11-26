@@ -1,0 +1,285 @@
+
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "تفاصيل الطلب" %} #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{% trans "تفاصيل الطلب" %} #{{ order.order_number }}</h1>
+        <div>
+            <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'confirmed' %}info{% elif order.status == 'processing' %}primary{% elif order.status == 'shipped' %}success{% elif order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'refunded' %}secondary{% endif %}">
+                {{ order.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- عناوين الشحن والفوترة -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h5>{% trans "عنوان الشحن" %}</h5>
+                            {% if order.shipping_address %}
+                                <p>
+                                    <strong>{{ order.shipping_address.first_name }} {{ order.shipping_address.last_name }}</strong><br>
+                                    {{ order.shipping_address.address_line_1 }}<br>
+                                    {% if order.shipping_address.address_line_2 %}
+                                        {{ order.shipping_address.address_line_2 }}<br>
+                                    {% endif %}
+                                    {{ order.shipping_address.city }}, {{ order.shipping_address.state }}<br>
+                                    {{ order.shipping_address.postal_code }}, {{ order.shipping_address.country }}<br>
+                                    {{ order.shipping_address.phone }}
+                                </p>
+                            {% else %}
+                                <p class="text-muted">{% trans "لا يوجد عنوان شحن" %}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <h5>{% trans "عنوان الفوترة" %}</h5>
+                            {% if order.billing_address %}
+                                <p>
+                                    <strong>{{ order.billing_address.first_name }} {{ order.billing_address.last_name }}</strong><br>
+                                    {{ order.billing_address.address_line_1 }}<br>
+                                    {% if order.billing_address.address_line_2 %}
+                                        {{ order.billing_address.address_line_2 }}<br>
+                                    {% endif %}
+                                    {{ order.billing_address.city }}, {{ order.billing_address.state }}<br>
+                                    {{ order.billing_address.postal_code }}, {{ order.billing_address.country }}<br>
+                                    {{ order.billing_address.phone }}
+                                </p>
+                            {% else %}
+                                <p class="text-muted">{% trans "لا يوجد عنوان فوترة" %}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h5>{% trans "معلومات الشحن" %}</h5>
+                            <p>
+                                <strong>{% trans "طريقة الشحن" %}:</strong> {{ order.shipping_method|default:"-" }}<br>
+                                <strong>{% trans "تكلفة الشحن" %}:</strong> {{ order.shipping_cost }}<br>
+                                {% if order.tracking_number %}
+                                    <strong>{% trans "رقم التتبع" %}:</strong> {{ order.tracking_number }}<br>
+                                {% endif %}
+                                {% if order.shipped_at %}
+                                    <strong>{% trans "تاريخ الشحن" %}:</strong> {{ order.shipped_at|date:"Y-m-d H:i" }}<br>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <h5>{% trans "معلومات الدفع" %}</h5>
+                            <p>
+                                <strong>{% trans "طريقة الدفع" %}:</strong> {{ order.payment_method|default:"-" }}<br>
+                                <strong>{% trans "حالة الدفع" %}:</strong> {{ order.payment_status|default:"-" }}<br>
+                                {% if order.transaction_id %}
+                                    <strong>{% trans "معرف المعاملة" %}:</strong> {{ order.transaction_id }}<br>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if order.notes %}
+                        <div class="mb-3">
+                            <h5>{% trans "ملاحظات الطلب" %}</h5>
+                            <p>{{ order.notes }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- عناصر الطلب -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "عناصر الطلب" %}</h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">{% trans "المنتج" %}</th>
+                                    <th scope="col">{% trans "السعر" %}</th>
+                                    <th scope="col">{% trans "الكمية" %}</th>
+                                    <th scope="col">{% trans "الإجمالي" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{% if item.product_image %}{{ item.product_image }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" 
+                                                     class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" 
+                                                     alt="{{ item.product_name }}">
+                                                <div>
+                                                    <h6 class="mb-0">{{ item.product_name }}</h6>
+                                                    {% if item.product_sku %}
+                                                        <small class="text-muted">{{ item.product_sku }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if item.compare_price %}
+                                                <span class="text-decoration-line-through text-muted">{{ item.compare_price }}</span>
+                                                <span class="text-danger fw-bold ms-1">{{ item.price }}</span>
+                                            {% else %}
+                                                <span>{{ item.price }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>
+                                            <span class="fw-bold">{{ item.total }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- سجل حالة الطلب -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "سجل حالة الطلب" %}</h5>
+
+                    <div class="timeline">
+                        {% for history in status_history %}
+                            <div class="timeline-item mb-4">
+                                <div class="timeline-dot bg-{% if history.status == 'pending' %}warning{% elif history.status == 'confirmed' %}info{% elif history.status == 'processing' %}primary{% elif history.status == 'shipped' %}success{% elif history.status == 'delivered' %}success{% elif history.status == 'cancelled' %}danger{% elif history.status == 'refunded' %}secondary{% endif %}"></div>
+                                <div class="timeline-content">
+                                    <h6>{{ history.get_status_display }}</h6>
+                                    <p class="text-muted mb-1">{{ history.created_at|date:"Y-m-d H:i" }}</p>
+                                    {% if history.notes %}
+                                        <p>{{ history.notes }}</p>
+                                    {% endif %}
+                                    {% if history.created_by %}
+                                        <small class="text-muted">{% trans "بواسطة" %}: {{ history.created_by.get_full_name|default:history.created_by.username }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- ملخص الطلب -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "ملخص الطلب" %}</h5>
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "المجموع الفرعي" %}:</span>
+                        <span>{{ order.subtotal }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "الشحن" %}:</span>
+                        <span>{{ order.shipping_cost }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "الضريبة" %}:</span>
+                        <span>{{ order.tax }}</span>
+                    </div>
+
+                    {% if order.discount %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{% trans "الخصم" %}:</span>
+                            <span>-{{ order.discount }}</span>
+                        </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <h6>{% trans "المجموع" %}:</h6>
+                        <h6>{{ order.total }}</h6>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {% if order.status in 'pending,confirmed' %}
+                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                                {% trans "إلغاء الطلب" %}
+                            </button>
+                        {% endif %}
+
+                        <a href="{% url 'orders:order_list' %}" class="btn btn-outline-secondary">
+                            {% trans "العودة إلى قائمة الطلبات" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal لإلغاء الطلب -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelOrderModalLabel">{% trans "تأكيد الإلغاء" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "هل أنت متأكد من أنك تريد إلغاء هذا الطلب؟" %}</p>
+                <p class="text-muted">{% trans "سيتم إرجاع المنتجات إلى المخزون وسيتم إلغاء الطلب." %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "إلغاء" %}</button>
+                <a href="{% url 'orders:cancel_order' order.id %}" class="btn btn-danger">{% trans "تأكيد الإلغاء" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.timeline-content {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+}
+</style>
+{% endblock %}

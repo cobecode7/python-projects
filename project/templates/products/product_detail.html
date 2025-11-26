@@ -1,0 +1,351 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} - متجر إلكتروني{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- معلومات المنتج -->
+    <div class="row mb-5">
+        <!-- صور المنتج -->
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <img src="{{ product.images.first.image.url }}" class="img-fluid product-image" id="main-image" alt="{{ product.name }}">
+                </div>
+                <div class="col-12">
+                    <div class="row">
+                        {% for image in product.images.all %}
+                        <div class="col-3 mb-2">
+                            <img src="{{ image.image.url }}" class="img-fluid product-thumbnail {% if forloop.first %}active{% endif %}" 
+                                 alt="{{ image.alt_text|default:product.name }}" data-main="{{ image.image.url }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تفاصيل المنتج -->
+        <div class="col-md-6">
+            <h1>{{ product.name }}</h1>
+
+            <!-- التقييمات -->
+            <div class="mb-3">
+                {% if product.average_rating %}
+                <div class="text-warning">
+                    {% for i in "12345" %}
+                    {% if forloop.counter <= product.average_rating|floatformat:0 %}
+                    <i class="bi bi-star-fill"></i>
+                    {% else %}
+                    <i class="bi bi-star"></i>
+                    {% endif %}
+                    {% endfor %}
+                    <span class="text-muted">({{ product.reviews_count }} تقييم)</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- السعر -->
+            <div class="mb-3">
+                {% if product.compare_price %}
+                <span class="text-decoration-line-through text-muted fs-4">{{ product.compare_price }} ريال</span>
+                <span class="fs-2 fw-bold text-primary">{{ product.price }} ريال</span>
+                {% if product.discount_percentage %}
+                <span class="badge bg-danger">خصم {{ product.discount_percentage }}%</span>
+                {% endif %}
+                {% else %}
+                <span class="fs-2 fw-bold">{{ product.price }} ريال</span>
+                {% endif %}
+            </div>
+
+            <!-- الوصف المختصر -->
+            <p class="mb-4">{{ product.short_description }}</p>
+
+            <!-- الكمية -->
+            <div class="mb-4">
+                {% if product.is_in_stock %}
+                <div class="d-flex align-items-center">
+                    <span class="text-success me-2">
+                        <i class="bi bi-check-circle-fill"></i> متوفر في المخزون
+                    </span>
+                    {% if product.track_quantity %}
+                    <span class="text-muted">({{ product.quantity }} قطعة متوفرة)</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <span class="text-danger">
+                    <i class="bi bi-x-circle-fill"></i> غير متوفر في المخزون
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- إضافة للسلة -->
+            <div class="mb-4">
+                {% if product.is_in_stock %}
+                <div class="d-flex align-items-center">
+                    <div class="quantity-selector me-3">
+                        <button class="btn btn-outline-secondary decrease-quantity" type="button">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <input type="number" class="form-control text-center quantity-input" value="1" min="1" 
+                               max="{% if product.track_quantity %}{{ product.quantity }}{% else %}999{% endif %}">
+                        <button class="btn btn-outline-secondary increase-quantity" type="button">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary add-to-cart-btn" data-product-id="{{ product.id }}">
+                        <i class="bi bi-cart-plus"></i> أضف للسلة
+                    </button>
+                    <button class="btn btn-outline-danger wishlist-btn" data-product-id="{{ product.id }}">
+                        <i class="bi bi-heart"></i>
+                    </button>
+                </div>
+                {% else %}
+                <button class="btn btn-secondary" disabled>
+                    <i class="bi bi-cart-x"></i> غير متوفر
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- الفئة والعلامة التجارية -->
+            <div class="mb-4">
+                <div class="mb-2">
+                    <strong>الفئة:</strong> 
+                    <a href="{{ product.category.get_absolute_url }}" class="text-decoration-none">{{ product.category.name }}</a>
+                </div>
+                {% if product.brand %}
+                <div class="mb-2">
+                    <strong>العلامة التجارية:</strong> 
+                    <a href="#" class="text-decoration-none">{{ product.brand.name }}</a>
+                </div>
+                {% endif %}
+                {% if product.tags.all %}
+                <div>
+                    <strong>الوسوم:</strong>
+                    {% for tag in product.tags.all %}
+                    <a href="#" class="badge bg-secondary text-decoration-none me-1">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- علامات التبويب -->
+    <ul class="nav nav-tabs mb-4" id="productTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" 
+                    type="button" role="tab" aria-controls="description" aria-selected="true">الوصف</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" 
+                    type="button" role="tab" aria-controls="reviews" aria-selected="false">التقييمات</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="productTabContent">
+        <!-- وصف المنتج -->
+        <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+            <div class="card">
+                <div class="card-body">
+                    {{ product.description|safe }}
+                </div>
+            </div>
+        </div>
+
+        <!-- تقييمات المنتج -->
+        <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+            <!-- إضافة تقييم -->
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">إضافة تقييم</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_review %}
+                    <div class="alert alert-info">
+                        لقد قمت بتقييم هذا المنتج من قبل.
+                    </div>
+                    {% else %}
+                    <form id="review-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">التقييم</label>
+                            <select class="form-select" id="rating" name="rating" required>
+                                <option value="" selected disabled>اختر التقييم</option>
+                                <option value="5">5 - ممتاز</option>
+                                <option value="4">4 - جيد جداً</option>
+                                <option value="3">3 - جيد</option>
+                                <option value="2">2 - مقبول</option>
+                                <option value="1">1 - سيء</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">العنوان</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">التقييم</label>
+                            <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">إرسال التقييم</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- قائمة التقييمات -->
+            {% if reviews %}
+            <div class="row">
+                {% for review in reviews %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6 class="card-title mb-0">{{ review.title }}</h6>
+                                <div class="text-warning">
+                                    {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                    <i class="bi bi-star"></i>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="card-text">{{ review.content }}</p>
+                            <footer class="blockquote-footer">
+                                {{ review.user_name }} - {{ review.created_at|date:"Y-m-d" }}
+                            </footer>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                لا توجد تقييمات لهذا المنتج حتى الآن.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- المنتجات ذات الصلة -->
+    {% if related_products %}
+    <div class="mt-5">
+        <h4 class="mb-4">المنتجات ذات الصلة</h4>
+        <div class="row">
+            {% for product in related_products %}
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <a href="{{ product.get_absolute_url }}">
+                        <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ product.get_absolute_url }}" class="text-decoration-none text-dark">{{ product.name }}</a>
+                        </h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">{{ product.price }} ريال</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm add-to-cart" data-product-id="{{ product.id }}">
+                                <i class="bi bi-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تغيير الصورة الرئيسية عند النقر على الصورة المصغرة
+    const thumbnails = document.querySelectorAll('.product-thumbnail');
+    const mainImage = document.getElementById('main-image');
+
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function() {
+            // إزالة الفئة النشطة من جميع الصور المصغرة
+            thumbnails.forEach(thumb => thumb.classList.remove('active'));
+
+            // إضافة الفئة النشطة للصورة المصغرة المحددة
+            this.classList.add('active');
+
+            // تغيير الصورة الرئيسية
+            mainImage.src = this.getAttribute('data-main');
+        });
+    });
+
+    // إضافة منتج للسلة
+    const addToCartBtn = document.querySelector('.add-to-cart-btn');
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const quantity = document.querySelector('.quantity-input').value;
+
+            addToCart(productId, quantity);
+        });
+    }
+
+    // إضافة للمفضلة
+    const wishlistBtn = document.querySelector('.wishlist-btn');
+    if (wishlistBtn) {
+        wishlistBtn.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            toggleWishlist(productId, this);
+        });
+    }
+
+    // إرسال التقييم
+    const reviewForm = document.getElementById('review-form');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const productId = {{ product.id }};
+            const formData = new FormData(this);
+
+            fetch(`/api/products/{{ product.id }}/add_review/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rating: formData.get('rating'),
+                    title: formData.get('title'),
+                    content: formData.get('content')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('تم إرسال التقييم بنجاح', 'success');
+                    reviewForm.reset();
+                    // إعادة تحميل التقييمات
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showToast(data.error || 'حدث خطأ ما', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('حدث خطأ ما. يرجى المحاولة مرة أخرى.', 'danger');
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

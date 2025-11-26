@@ -1,0 +1,265 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}الرئيسية - متجر إلكتروني{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- قسم البانر -->
+    <section class="hero-section mb-5">
+        <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="d-block w-100 hero-slide" style="background-image: url('{% static 'images/slide1.jpg' %}'); height: 500px; background-size: cover; background-position: center;">
+                        <div class="carousel-caption">
+                            <h1>تخفيضات تصل إلى 50%</h1>
+                            <p>استمتع بأفضل المنتجات بأسعار ممتازة</p>
+                            <a href="#" class="btn btn-primary">تسوق الآن</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="d-block w-100 hero-slide" style="background-image: url('{% static 'images/slide2.jpg' %}'); height: 500px; background-size: cover; background-position: center;">
+                        <div class="carousel-caption">
+                            <h1>مجموعة جديدة</h1>
+                            <p>اكتشف أحدث المنتجات لدينا</p>
+                            <a href="#" class="btn btn-primary">استكشف الآن</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="d-block w-100 hero-slide" style="background-image: url('{% static 'images/slide3.jpg' %}'); height: 500px; background-size: cover; background-position: center;">
+                        <div class="carousel-caption">
+                            <h1>توصيل سريع</h1>
+                            <p>استلم طلبك في أسرع وقت</p>
+                            <a href="#" class="btn btn-primary">اعرف المزيد</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- قسم الفئات -->
+    <section class="categories-section mb-5">
+        <h2 class="text-center mb-4">الفئات</h2>
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card category-card h-100">
+                    <img src="{% static 'images/category1.jpg' %}" class="card-img-top" alt="فئة 1">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">أجهزة إلكترونية</h5>
+                        <a href="#" class="btn btn-outline-primary">تسوق الآن</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card category-card h-100">
+                    <img src="{% static 'images/category2.jpg' %}" class="card-img-top" alt="فئة 2">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">ملابس</h5>
+                        <a href="#" class="btn btn-outline-primary">تسوق الآن</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card category-card h-100">
+                    <img src="{% static 'images/category3.jpg' %}" class="card-img-top" alt="فئة 3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">أثاث منزلي</h5>
+                        <a href="#" class="btn btn-outline-primary">تسوق الآن</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card category-card h-100">
+                    <img src="{% static 'images/category4.jpg' %}" class="card-img-top" alt="فئة 4">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">رياضة</h5>
+                        <a href="#" class="btn btn-outline-primary">تسوق الآن</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- قسم المنتجات المميزة -->
+    <section class="featured-products-section mb-5">
+        <h2 class="text-center mb-4">المنتجات المميزة</h2>
+        <div class="row">
+            <!-- سيتم استبدال هذه المنتجات بمنتجات حقيقية من قاعدة البيانات -->
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <div class="badge bg-danger position-absolute top-0 start-0 m-2">خصم 20%</div>
+                    <img src="{% static 'images/product1.jpg' %}" class="card-img-top" alt="منتج 1">
+                    <div class="card-body">
+                        <h5 class="card-title">منتج مميز 1</h5>
+                        <p class="card-text">وصف مختصر للمنتج</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-decoration-line-through text-muted">500 ريال</span>
+                                <span class="fw-bold">400 ريال</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm">أضف للسلة</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <img src="{% static 'images/product2.jpg' %}" class="card-img-top" alt="منتج 2">
+                    <div class="card-body">
+                        <h5 class="card-title">منتج مميز 2</h5>
+                        <p class="card-text">وصف مختصر للمنتج</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">300 ريال</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm">أضف للسلة</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <div class="badge bg-success position-absolute top-0 start-0 m-2">جديد</div>
+                    <img src="{% static 'images/product3.jpg' %}" class="card-img-top" alt="منتج 3">
+                    <div class="card-body">
+                        <h5 class="card-title">منتج مميز 3</h5>
+                        <p class="card-text">وصف مختصر للمنتج</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">450 ريال</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm">أضف للسلة</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    <img src="{% static 'images/product4.jpg' %}" class="card-img-top" alt="منتج 4">
+                    <div class="card-body">
+                        <h5 class="card-title">منتج مميز 4</h5>
+                        <p class="card-text">وصف مختصر للمنتج</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">250 ريال</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm">أضف للسلة</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="#" class="btn btn-outline-primary">عرض جميع المنتجات</a>
+        </div>
+    </section>
+
+    <!-- قسم العروض الخاصة -->
+    <section class="special-offers-section mb-5 bg-light py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">عروض خاصة</h2>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <img src="{% static 'images/special-offer.jpg' %}" class="img-fluid rounded" alt="عرض خاص">
+                </div>
+                <div class="col-md-6">
+                    <h3>تخفيضات موسمية</h3>
+                    <p>احصل على أفضل العروض على منتجات مختارة لفترة محدودة. لا تفوت الفرصة!</p>
+                    <ul>
+                        <li>تخفيضات تصل إلى 70%</li>
+                        <li>شحن مجاني للطلبات فوق 200 ريال</li>
+                        <li>إرجاع مجاني خلال 30 يوم</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary">تسوق الآن</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- قسم التقييمات -->
+    <section class="testimonials-section mb-5">
+        <h2 class="text-center mb-4">آراء العملاء</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card testimonial-card h-100">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+                        <p class="card-text">"منتجات رائعة وجودة عالية. خدمة عملاء ممتازة وتوصيل سريع. أوصي بالتسوق من هذا المتجر."</p>
+                        <footer class="blockquote-footer">
+                            <img src="{% static 'images/customer1.jpg' %}" class="rounded-circle me-2" width="30" height="30" alt="عميل 1">
+                            أحمد محمد
+                        </footer>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card testimonial-card h-100">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star text-warning"></i>
+                        </div>
+                        <p class="card-text">"تجربة تسوق رائعة. المنتجات تطابق الوصف تماماً. أسعار تنافسية وجودة ممتازة."</p>
+                        <footer class="blockquote-footer">
+                            <img src="{% static 'images/customer2.jpg' %}" class="rounded-circle me-2" width="30" height="30" alt="عميل 2">
+                            فاطمة أحمد
+                        </footer>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card testimonial-card h-100">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+                        <p class="card-text">"متجر ممتاز مع منتجات عالية الجودة. خدمة عملاء سريعة الاستجابة وتوصيل في الوقت المحدد."</p>
+                        <footer class="blockquote-footer">
+                            <img src="{% static 'images/customer3.jpg' %}" class="rounded-circle me-2" width="30" height="30" alt="عميل 3">
+                            محمد سالم
+                        </footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // يمكن إضافة أي كود JavaScript خاص بالصفحة الرئيسية هنا
+    });
+</script>
+{% endblock %}

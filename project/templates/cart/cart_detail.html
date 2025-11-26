@@ -1,0 +1,478 @@
+
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "سلة التسوق" %}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">{% trans "سلة التسوق" %}</h1>
+
+    {% if cart.items.all %}
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">{% trans "المنتج" %}</th>
+                                        <th scope="col">{% trans "السعر" %}</th>
+                                        <th scope="col">{% trans "الكمية" %}</th>
+                                        <th scope="col">{% trans "الإجمالي" %}</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cart.items.all %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{% if item.image %}{{ item.image }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" 
+                                                     class="img-fluid rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" alt="{{ item.product.name }}">
+                                                <div>
+                                                    <h6 class="mb-0">{{ item.product.name }}</h6>
+                                                    {% if item.variant %}
+                                                        <small class="text-muted">{{ item.variant.sku }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if item.compare_price %}
+                                                <span class="text-decoration-line-through text-muted">{{ item.compare_price }}</span>
+                                                <span class="text-danger fw-bold ms-1">{{ item.price }}</span>
+                                            {% else %}
+                                                <span>{{ item.price }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="input-group input-group-sm" style="width: 120px;">
+                                                <button class="btn btn-outline-secondary update-quantity" type="button" data-item-id="{{ item.id }}" data-action="decrease">-</button>
+                                                <input type="number" class="form-control text-center quantity-input" value="{{ item.quantity }}" min="1" data-item-id="{{ item.id }}">
+                                                <button class="btn btn-outline-secondary update-quantity" type="button" data-item-id="{{ item.id }}" data-action="increase">+</button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold">{{ item.total_price }}</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-danger remove-from-cart" data-item-id="{{ item.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-right me-2"></i>{% trans "متابعة التسوق" %}
+                            </a>
+                            <button class="btn btn-outline-danger" id="clear-cart">
+                                <i class="fas fa-trash me-2"></i>{% trans "تفريغ السلة" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- الكوبونات -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{% trans "الكوبونات" %}</h5>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="coupon-code" 
+                                       placeholder="{% trans 'أدخل كود الكوبون' %}">
+                                <button class="btn btn-outline-secondary" type="button" id="apply-coupon">
+                                    {% trans "تطبيق" %}
+                                </button>
+                            </div>
+                            <div id="coupon-message" class="mt-2"></div>
+                        </div>
+
+                        <div id="applied-coupon" class="d-none">
+                            <div class="alert alert-success d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ request.session.coupon_code }}</strong>
+                                    <span id="coupon-discount-text"></span>
+                                </div>
+                                <button type="button" class="btn-close" id="remove-coupon"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ملخص الطلب -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{% trans "ملخص الطلب" %}</h5>
+                        <hr>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{% trans "المجموع الفرعي" %}:</span>
+                            <span id="subtotal">{{ cart.get_total_price }}</span>
+                        </div>
+
+                        <div id="coupon-discount-row" class="d-none d-flex justify-content-between mb-2">
+                            <span>{% trans "الخصم" %}:</span>
+                            <span id="coupon-discount-value" class="text-danger">-0.00</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{% trans "الشحن" %}:</span>
+                            <span>{% trans "يتم حسابه لاحقاً" %}</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between mb-4">
+                            <h6>{% trans "المجموع" %}:</h6>
+                            <h6 id="total">{{ cart.get_total_price }}</h6>
+                        </div>
+
+                        <a href="{% url 'orders:checkout' %}" class="btn btn-primary w-100">
+                            {% trans "إتمام الطلب" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-shopping-cart fa-3x text-muted mb-4"></i>
+                <h4>{% trans "سلة التسوق فارغة" %}</h4>
+                <p class="text-muted">{% trans "أضف بعض المنتجات إلى سلة التسوق" %}</p>
+                <a href="{% url 'products:product_list' %}" class="btn btn-primary">
+                    {% trans "تسوق الآن" %}
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal لإزالة العنصر -->
+<div class="modal fade" id="removeItemModal" tabindex="-1" aria-labelledby="removeItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeItemModalLabel">{% trans "تأكيد الإزالة" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "هل أنت متأكد من أنك تريد إزالة هذا المنتج من سلة التسوق؟" %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "إلغاء" %}</button>
+                <button type="button" class="btn btn-danger" id="confirm-remove">{% trans "إزالة" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal لتفريغ السلة -->
+<div class="modal fade" id="clearCartModal" tabindex="-1" aria-labelledby="clearCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearCartModalLabel">{% trans "تأكيد التفريغ" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "هل أنت متأكد من أنك تريد تفريغ سلة التسوق؟" %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "إلغاء" %}</button>
+                <button type="button" class="btn btn-danger" id="confirm-clear">{% trans "تفريغ" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديث الكمية
+    document.querySelectorAll('.update-quantity').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const action = this.getAttribute('data-action');
+            const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+            let quantity = parseInt(input.value);
+
+            if (action === 'increase') {
+                quantity += 1;
+            } else if (action === 'decrease' && quantity > 1) {
+                quantity -= 1;
+            }
+
+            updateCartItem(itemId, quantity);
+        });
+    });
+
+    // تحديث الكمية عند تغيير القيمة مباشرة
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const quantity = parseInt(this.value);
+
+            if (quantity > 0) {
+                updateCartItem(itemId, quantity);
+            } else {
+                this.value = 1;
+            }
+        });
+    });
+
+    // إزالة عنصر من السلة
+    let removeItemId = null;
+    document.querySelectorAll('.remove-from-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            removeItemId = this.getAttribute('data-item-id');
+            const modal = new bootstrap.Modal(document.getElementById('removeItemModal'));
+            modal.show();
+        });
+    });
+
+    document.getElementById('confirm-remove').addEventListener('click', function() {
+        if (removeItemId) {
+            removeCartItem(removeItemId);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('removeItemModal'));
+            modal.hide();
+        }
+    });
+
+    // تفريغ السلة
+    document.getElementById('clear-cart').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('clearCartModal'));
+        modal.show();
+    });
+
+    document.getElementById('confirm-clear').addEventListener('click', function() {
+        clearCart();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('clearCartModal'));
+        modal.hide();
+    });
+
+    // دوال API
+    function updateCartItem(itemId, quantity) {
+        fetch(`/cart/api/update/${itemId}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ quantity: quantity })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.items) {
+                updateCartView(data);
+            } else if (data.error) {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function removeCartItem(itemId) {
+        fetch(`/cart/api/remove/${itemId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.items) {
+                updateCartView(data);
+            } else if (data.error) {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function clearCart() {
+        fetch('/cart/api/clear/', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.items) {
+                updateCartView(data);
+            } else if (data.error) {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function updateCartView(cartData) {
+        // تحديث ملخص السلة
+        const currentSubtotal = parseFloat(document.getElementById('subtotal').textContent);
+        let discount = 0;
+
+        // حساب الخصم الحالي
+        const discountRow = document.getElementById('coupon-discount-row');
+        if (!discountRow.classList.contains('d-none')) {
+            discount = parseFloat(document.getElementById('coupon-discount-value').textContent.replace('-', ''));
+        }
+
+        document.getElementById('subtotal').textContent = cartData.total_price.toFixed(2);
+        document.getElementById('total').textContent = (cartData.total_price - discount).toFixed(2);
+
+        // إعادة تحميل الصفحة إذا كانت السلة فارغة
+        if (cartData.items.length === 0) {
+            location.reload();
+        }
+    }
+
+    // وظائف الكوبونات
+    document.addEventListener('DOMContentLoaded', function() {
+        // تطبيق الكوبون
+        document.getElementById('apply-coupon').addEventListener('click', function() {
+            const couponCode = document.getElementById('coupon-code').value.trim();
+
+            if (!couponCode) {
+                showCouponMessage('{% trans "يرجى إدخال كود الكوبون" %}', 'danger');
+                return;
+            }
+
+            fetch('/coupons/api/apply/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ code: couponCode })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showCouponMessage(data.error, 'danger');
+                } else {
+                    // عرض الكوبون المطبق
+                    document.getElementById('applied-coupon').classList.remove('d-none');
+                    document.getElementById('coupon-code').value = '';
+
+                    // تحديث نص الخصم
+                    const discountType = data.coupon.discount_type;
+                    const discountValue = data.coupon.discount_value;
+                    let discountText = '';
+
+                    if (discountType === 'percentage') {
+                        discountText = `{% trans "خصم" %} ${discountValue}%`;
+                    } else {
+                        discountText = `{% trans "خصم" %} ${discountValue}`;
+                    }
+
+                    document.getElementById('coupon-discount-text').textContent = discountText;
+
+                    // تحديث ملخص الطلب
+                    updateCartTotals(data.cart_total, data.new_total, data.coupon.discount);
+
+                    showCouponMessage('{% trans "تم تطبيق الكوبون بنجاح" %}', 'success');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCouponMessage('{% trans "حدث خطأ أثناء تطبيق الكوبون" %}', 'danger');
+            });
+        });
+
+        // إزالة الكوبون
+        document.getElementById('remove-coupon').addEventListener('click', function() {
+            fetch('/coupons/api/remove/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // إخفاء الكوبون
+                document.getElementById('applied-coupon').classList.add('d-none');
+
+                // تحديث ملخص الطلب
+                updateCartTotals(data.cart_total, data.new_total, 0);
+
+                showCouponMessage('{% trans "تم إزالة الكوبون" %}', 'info');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCouponMessage('{% trans "حدث خطأ أثناء إزالة الكوبون" %}', 'danger');
+            });
+        });
+
+        // التحقق من وجود كوبون في الجلسة
+        {% if request.session.coupon_code %}
+            document.getElementById('applied-coupon').classList.remove('d-none');
+
+            // تحديث نص الخصم
+            document.getElementById('coupon-discount-text').textContent = `{% trans "خصم" %} {{ request.session.coupon_discount }}`;
+
+            // تحديث ملخص الطلب
+            const subtotal = parseFloat('{{ cart.get_total_price }}');
+            const discount = parseFloat('{{ request.session.coupon_discount }}');
+            updateCartTotals(subtotal, subtotal - discount, discount);
+        {% endif %}
+    });
+
+    function showCouponMessage(message, type) {
+        const messageDiv = document.getElementById('coupon-message');
+        messageDiv.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
+
+        // إخفاء الرسالة بعد 5 ثوانٍ
+        setTimeout(() => {
+            messageDiv.innerHTML = '';
+        }, 5000);
+    }
+
+    function updateCartTotals(subtotal, total, discount) {
+        document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+        document.getElementById('total').textContent = total.toFixed(2);
+
+        // عرض/إخفاء صف الخصم
+        const discountRow = document.getElementById('coupon-discount-row');
+        if (discount > 0) {
+            discountRow.classList.remove('d-none');
+            document.getElementById('coupon-discount-value').textContent = `-${discount.toFixed(2)}`;
+        } else {
+            discountRow.classList.add('d-none');
+        }
+    }
+
+    // دالة للحصول على قيمة CSRF cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

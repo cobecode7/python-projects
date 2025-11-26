@@ -1,0 +1,286 @@
+
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "إتمام الطلب" %}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">{% trans "إتمام الطلب" %}</h1>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- عناوين الشحن والفوترة -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "عناوين الشحن والفوترة" %}</h5>
+
+                    {% if addresses %}
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "عنوان الشحن" %}</label>
+                            {% for address in addresses %}
+                                {% if address.type == 'shipping' %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="shipping_address" 
+                                               id="shipping_{{ address.id }}" value="{{ address.id }}"
+                                               {% if shipping_address and shipping_address.id == address.id %}checked{% endif %}>
+                                        <label class="form-check-label" for="shipping_{{ address.id }}">
+                                            <div class="border p-3 rounded">
+                                                <div class="d-flex justify-content-between">
+                                                    <div>
+                                                        <strong>{{ address.first_name }} {{ address.last_name }}</strong>
+                                                        {% if address.default %}<span class="badge bg-primary ms-2">{% trans "افتراضي" %}</span>{% endif %}
+                                                        <br>
+                                                        {{ address.address_line_1 }}
+                                                        {% if address.address_line_2 %}<br>{{ address.address_line_2 }}{% endif %}
+                                                        <br>{{ address.city }}, {{ address.state }}
+                                                        <br>{{ address.postal_code }}, {{ address.country }}
+                                                        <br>{{ address.phone }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "عنوان الفوترة" %}</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="billing_address" 
+                                       id="same_as_shipping" value="" checked>
+                                <label class="form-check-label" for="same_as_shipping">
+                                    {% trans "نفس عنوان الشحن" %}
+                                </label>
+                            </div>
+
+                            {% for address in addresses %}
+                                {% if address.type == 'billing' %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="billing_address" 
+                                               id="billing_{{ address.id }}" value="{{ address.id }}">
+                                        <label class="form-check-label" for="billing_{{ address.id }}">
+                                            <div class="border p-3 rounded">
+                                                <div class="d-flex justify-content-between">
+                                                    <div>
+                                                        <strong>{{ address.first_name }} {{ address.last_name }}</strong>
+                                                        {% if address.default %}<span class="badge bg-primary ms-2">{% trans "افتراضي" %}</span>{% endif %}
+                                                        <br>
+                                                        {{ address.address_line_1 }}
+                                                        {% if address.address_line_2 %}<br>{{ address.address_line_2 }}{% endif %}
+                                                        <br>{{ address.city }}, {{ address.state }}
+                                                        <br>{{ address.postal_code }}, {{ address.country }}
+                                                        <br>{{ address.phone }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{% url 'users:address_add' %}?type=shipping" class="btn btn-outline-secondary">
+                                {% trans "إضافة عنوان شحن جديد" %}
+                            </a>
+                            <a href="{% url 'users:address_add' %}?type=billing" class="btn btn-outline-secondary">
+                                {% trans "إضافة عنوان فوترة جديد" %}
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            {% trans "لا يوجد عناوين محفوظة" %}. 
+                            <a href="{% url 'users:address_add' %}">{% trans "أضف عنواناً جديداً" %}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- طريقة الدفع -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "طريقة الدفع" %}</h5>
+
+                    <div class="mb-3">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="payment_method" 
+                                   id="payment_credit_card" value="credit_card" checked>
+                            <label class="form-check-label" for="payment_credit_card">
+                                {% trans "بطاقة ائتمانية" %}
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="payment_method" 
+                                   id="payment_paypal" value="paypal">
+                            <label class="form-check-label" for="payment_paypal">
+                                {% trans "باي بال" %}
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="payment_method" 
+                                   id="payment_cash_on_delivery" value="cash_on_delivery">
+                            <label class="form-check-label" for="payment_cash_on_delivery">
+                                {% trans "الدفع عند الاستلام" %}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الكوبونات -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "الكوبونات" %}</h5>
+
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="coupon-code" 
+                                   placeholder="{% trans 'أدخل كود الكوبون' %}">
+                            <button class="btn btn-outline-secondary" type="button" id="apply-coupon">
+                                {% trans "تطبيق" %}
+                            </button>
+                        </div>
+                        <div id="coupon-message" class="mt-2"></div>
+                    </div>
+
+                    <div id="applied-coupon" class="d-none">
+                        <div class="alert alert-success d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ request.session.coupon_code }}</strong>
+                                <span id="coupon-discount-text"></span>
+                            </div>
+                            <button type="button" class="btn-close" id="remove-coupon"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ملاحظات الطلب -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "ملاحظات الطلب" %}</h5>
+
+                    <div class="mb-3">
+                        <textarea class="form-control" name="notes" rows="3" 
+                                  placeholder="{% trans 'أضف أي ملاحظات حول طلبك هنا...' %}"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- ملخص الطلب -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "ملخص الطلب" %}</h5>
+                    <hr>
+
+                    <!-- عناصر السلة -->
+                    <div class="mb-3">
+                        {% for item in cart.items.all %}
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{% if item.image %}{{ item.image }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" 
+                                     class="img-fluid rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" 
+                                     alt="{{ item.product.name }}">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">{{ item.product.name }}</h6>
+                                    {% if item.variant %}
+                                        <small class="text-muted">{{ item.variant.sku }}</small>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ item.quantity }} × {{ item.price }}</span>
+                                        <span>{{ item.total_price }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr>
+
+                    <!-- التكاليف -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "المجموع الفرعي" %}:</span>
+                        <span id="subtotal">{{ cart.get_total_price }}</span>
+                    </div>
+
+                    <div id="coupon-discount-row" class="d-none d-flex justify-content-between mb-2">
+                        <span>{% trans "الخصم" %}:</span>
+                        <span id="coupon-discount-value" class="text-danger">-0.00</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "الشحن" %}:</span>
+                        <span>10.00</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "الضريبة" %}:</span>
+                        <span>0.00</span>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <h6>{% trans "المجموع" %}:</h6>
+                        <h6 id="total">{{ cart.get_total_price|add:"10.00" }}</h6>
+                    </div>
+
+                    <button type="submit" form="checkout-form" class="btn btn-primary w-100">
+                        {% trans "إتمام الطلب" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="checkout-form" method="post" action="{% url 'orders:create_order' %}">
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/checkout.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkoutForm = document.getElementById('checkout-form');
+
+    // عند النقر على زر إتمام الطلب
+    document.querySelector('button[form="checkout-form"]').addEventListener('click', function() {
+        // جمع البيانات من النموذج
+        const shippingAddress = document.querySelector('input[name="shipping_address"]:checked');
+        const billingAddress = document.querySelector('input[name="billing_address"]:checked');
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+        const notes = document.querySelector('textarea[name="notes"]');
+
+        // التحقق من اختيار عنوان الشحن
+        if (!shippingAddress || !shippingAddress.value) {
+            alert('{% trans "يجب اختيار عنوان الشحن" %}');
+            return;
+        }
+
+        // التحقق من اختيار طريقة الدفع
+        if (!paymentMethod) {
+            alert('{% trans "يجب اختيار طريقة الدفع" %}');
+            return;
+        }
+
+        // إضافة البيانات إلى النموذج المخفي
+        checkoutForm.innerHTML += `
+            <input type="hidden" name="shipping_address" value="${shippingAddress.value}">
+            <input type="hidden" name="billing_address" value="${billingAddress ? billingAddress.value : ''}">
+            <input type="hidden" name="payment_method" value="${paymentMethod.value}">
+            <input type="hidden" name="notes" value="${notes.value}">
+        `;
+
+        // إرسال النموذج
+        checkoutForm.submit();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,415 @@
+
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "الدفع" %} - {% trans "طلب" %} #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">{% trans "الدفع" %}</h1>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- ملخص الطلب -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "ملخص الطلب" %} #{{ order.order_number }}</h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col">{% trans "المنتج" %}</th>
+                                    <th scope="col">{% trans "السعر" %}</th>
+                                    <th scope="col">{% trans "الكمية" %}</th>
+                                    <th scope="col">{% trans "الإجمالي" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{% if item.product_image %}{{ item.product_image }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" 
+                                                     class="img-fluid rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" 
+                                                     alt="{{ item.product_name }}">
+                                                <div>
+                                                    <h6 class="mb-0">{{ item.product_name }}</h6>
+                                                    {% if item.product_sku %}
+                                                        <small class="text-muted">{{ item.product_sku }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if item.compare_price %}
+                                                <span class="text-decoration-line-through text-muted">{{ item.compare_price }}</span>
+                                                <span class="text-danger fw-bold ms-1">{{ item.price }}</span>
+                                            {% else %}
+                                                <span>{{ item.price }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>
+                                            <span class="fw-bold">{{ item.total }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr>
+
+                    <!-- التكاليف -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "المجموع الفرعي" %}:</span>
+                        <span>{{ order.subtotal }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "الشحن" %}:</span>
+                        <span>{{ order.shipping_cost }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{% trans "الضريبة" %}:</span>
+                        <span>{{ order.tax }}</span>
+                    </div>
+
+                    {% if order.discount %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{% trans "الخصم" %}:</span>
+                            <span>-{{ order.discount }}</span>
+                        </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <h6>{% trans "المجموع" %}:</h6>
+                        <h6>{{ order.total }}</h6>
+                    </div>
+                </div>
+            </div>
+
+            <!-- طرق الدفع -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "اختر طريقة الدفع" %}</h5>
+
+                    <div class="payment-methods">
+                        {% for method in payment_methods %}
+                            <div class="payment-method" data-method="{{ method.method }}">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                           id="payment_{{ method.method }}" value="{{ method.method }}"
+                                           {% if forloop.first %}checked{% endif %}>
+                                    <label class="form-check-label d-flex align-items-center" for="payment_{{ method.method }}">
+                                        {% if method.icon %}
+                                            <img src="{{ method.icon.url }}" class="me-2" style="height: 30px;" alt="{{ method.name }}">
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ method.name }}</div>
+                                            {% if method.description %}
+                                                <small class="text-muted">{{ method.description }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- تفاصيل طريقة الدفع -->
+                                <div class="payment-details" id="details_{{ method.method }}">
+                                    {% if method.method == 'credit_card' %}
+                                        <!-- نموذج بطاقة الائتمان -->
+                                        <div class="card-element-container">
+                                            <div id="card-element">
+                                                <!-- سيتم إدراج عنصر بطاقة Stripe هنا -->
+                                            </div>
+                                            <div id="card-errors" role="alert"></div>
+                                        </div>
+
+                                        <button id="submit-card" class="btn btn-primary w-100 mt-3">
+                                            <span id="card-button-text">{% trans "دفع الآن" %}</span>
+                                            <div id="card-spinner" class="spinner-border spinner-border-sm d-none" role="status">
+                                                <span class="visually-hidden">{% trans "جاري المعالجة..." %}</span>
+                                            </div>
+                                        </button>
+                                    {% elif method.method == 'paypal' %}
+                                        <!-- زر PayPal -->
+                                        <div id="paypal-button-container"></div>
+                                    {% elif method.method == 'cash_on_delivery' %}
+                                        <!-- الدفع عند الاستلام -->
+                                        <div class="alert alert-info">
+                                            {% trans "سيتم الدفع عند استلام الطلب" %}
+                                        </div>
+
+                                        <button id="submit-cod" class="btn btn-primary w-100 mt-3">
+                                            {% trans "تأكيد الطلب" %}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- معلومات الطلب -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "معلومات الطلب" %}</h5>
+
+                    <div class="mb-3">
+                        <h6>{% trans "عنوان الشحن" %}</h6>
+                        {% if order.shipping_address %}
+                            <p>
+                                <strong>{{ order.shipping_address.first_name }} {{ order.shipping_address.last_name }}</strong><br>
+                                {{ order.shipping_address.address_line_1 }}<br>
+                                {% if order.shipping_address.address_line_2 %}
+                                    {{ order.shipping_address.address_line_2 }}<br>
+                                {% endif %}
+                                {{ order.shipping_address.city }}, {{ order.shipping_address.state }}<br>
+                                {{ order.shipping_address.postal_code }}, {{ order.shipping_address.country }}<br>
+                                {{ order.shipping_address.phone }}
+                            </p>
+                        {% else %}
+                            <p class="text-muted">{% trans "لا يوجد عنوان شحن" %}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h6>{% trans "طريقة الشحن" %}</h6>
+                        <p>{{ order.shipping_method|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- المساعدة -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "هل تحتاج مساعدة؟" %}</h5>
+                    <p class="text-muted">
+                        {% trans "إذا واجهت أي مشاكل أثناء عملية الدفع، يرجى التواصل معنا" %}
+                    </p>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-secondary w-100">
+                        {% trans "تواصل معنا" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- رسائل النجاح والخطأ -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="payment-success" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <strong class="me-auto">{% trans "نجاح" %}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {% trans "تمت عملية الدفع بنجاح" %}
+        </div>
+    </div>
+
+    <div id="payment-error" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <strong class="me-auto">{% trans "خطأ" %}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="error-message">
+            {% trans "حدث خطأ أثناء عملية الدفع" %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://www.paypal.com/sdk/js?client-id={{ stripe_publishable_key }}&currency=USD"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // إعدادات Stripe
+    const stripe = Stripe('{{ stripe_publishable_key }}');
+    const elements = stripe.elements();
+
+    // إنشاء عنصر بطاقة الائتمان
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#424770',
+                '::placeholder': {
+                    color: '#aab7c4',
+                },
+            },
+        },
+    });
+
+    // عرض تفاصيل طريقة الدفع المختارة
+    function showPaymentDetails(method) {
+        document.querySelectorAll('.payment-details').forEach(detail => {
+            detail.style.display = 'none';
+        });
+
+        const selectedDetail = document.getElementById(`details_${method}`);
+        if (selectedDetail) {
+            selectedDetail.style.display = 'block';
+        }
+    }
+
+    // عند تغيير طريقة الدفع
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            showPaymentDetails(this.value);
+        });
+    });
+
+    // عرض تفاصيل طريقة الدفع الافتراضية
+    const defaultMethod = document.querySelector('input[name="payment_method"]:checked').value;
+    showPaymentDetails(defaultMethod);
+
+    // معالجة الدفع بالبطاقة الائتمانية
+    if (document.getElementById('card-element')) {
+        cardElement.mount('#card-element');
+
+        // معالجة أخطاء البطاقة
+        cardElement.addEventListener('change', ({error}) => {
+            const displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // عند النقر على زر الدفع بالبطاقة
+        const submitButton = document.getElementById('submit-card');
+        submitButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+
+            const buttonText = document.getElementById('card-button-text');
+            const spinner = document.getElementById('card-spinner');
+
+            // عرض مؤشر التحميل
+            buttonText.classList.add('d-none');
+            spinner.classList.remove('d-none');
+            submitButton.disabled = true;
+
+            // إنشاء دفعة
+            const response = await fetch('{% url "payments:create_payment_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    order_id: {{ order.id }},
+                    method: 'credit_card'
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // تأكيد الدفع مع Stripe
+                const {error, paymentIntent} = await stripe.confirmCardPayment(data.client_secret, {
+                    payment_method: {
+                        card: cardElement,
+                    },
+                });
+
+                if (error) {
+                    // عرض الخطأ
+                    document.getElementById('card-errors').textContent = error.message;
+
+                    // إعادة تعيين الزر
+                    buttonText.classList.remove('d-none');
+                    spinner.classList.add('d-none');
+                    submitButton.disabled = false;
+                } else {
+                    // الدفع ناجح
+                    window.location.href = `{% url 'orders:order_detail' order.id %}`;
+                }
+            } else {
+                // عرض الخطأ
+                document.getElementById('error-message').textContent = data.error;
+                const errorToast = new bootstrap.Toast(document.getElementById('payment-error'));
+                errorToast.show();
+
+                // إعادة تعيين الزر
+                buttonText.classList.remove('d-none');
+                spinner.classList.add('d-none');
+                submitButton.disabled = false;
+            }
+        });
+    }
+
+    // معالجة الدفع عبر PayPal
+    if (document.getElementById('paypal-button-container')) {
+        paypal.Buttons({
+            createOrder: async function() {
+                // إنشاء دفعة
+                const response = await fetch('{% url "payments:create_payment_api" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        order_id: {{ order.id }},
+                        method: 'paypal'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // إعادة توجيه إلى PayPal
+                    window.location.href = data.approval_url;
+                } else {
+                    // عرض الخطأ
+                    document.getElementById('error-message').textContent = data.error;
+                    const errorToast = new bootstrap.Toast(document.getElementById('payment-error'));
+                    errorToast.show();
+                }
+            }
+        }).render('#paypal-button-container');
+    }
+
+    // معالجة الدفع عند الاستلام
+    if (document.getElementById('submit-cod')) {
+        document.getElementById('submit-cod').addEventListener('click', async function() {
+            // إنشاء دفعة
+            const response = await fetch('{% url "payments:create_payment_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    order_id: {{ order.id }},
+                    method: 'cash_on_delivery'
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // الدفع ناجح
+                window.location.href = `{% url 'orders:order_detail' order.id %}`;
+            } else {
+                // عرض الخطأ
+                document.getElementById('error-message').textContent = data.error;
+                const errorToast = new bootstrap.Toast(document.getElementById('payment-error'));
+                errorToast.show();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

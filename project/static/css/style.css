@@ -1,0 +1,346 @@
+
+/* CSS أساسي للمتجر الإلكتروني */
+
+/* متغيرات CSS */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --font-family: 'Tajawal', sans-serif;
+}
+
+/* إعدادات عامة */
+body {
+    font-family: var(--font-family);
+    color: var(--dark-color);
+    background-color: var(--light-color);
+}
+
+/* رأس الصفحة */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* قسم البانر */
+.hero-slide {
+    position: relative;
+}
+
+.carousel-caption {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 2rem;
+    border-radius: 0.5rem;
+}
+
+/* قسم الفئات */
+.category-card {
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.category-card:hover {
+    transform: translateY(-10px);
+}
+
+.category-card img {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* قسم المنتجات */
+.product-card {
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-card img {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* قسم التقييمات */
+.testimonial-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* قسم تذييل الصفحة */
+footer {
+    margin-top: 3rem;
+}
+
+footer a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--primary-color) !important;
+}
+
+/* صفحة المنتجات */
+.product-image {
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.product-thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: border 0.3s ease;
+}
+
+.product-thumbnail:hover,
+.product-thumbnail.active {
+    border: 2px solid var(--primary-color);
+}
+
+/* صفحة السلة */
+.cart-item-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+/* صفحة الدفع */
+.payment-method {
+    border: 1px solid var(--secondary-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.payment-method.selected {
+    border-color: var(--primary-color);
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* صفحة الحساب */
+.profile-avatar {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+}
+
+/* صفحة العناوين */
+.address-card {
+    border: 1px solid var(--secondary-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.address-card.default {
+    border-color: var(--success-color);
+    background-color: rgba(25, 135, 84, 0.05);
+}
+
+/* صفحة الطلبات */
+.order-status {
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.order-status.pending {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: var(--warning-color);
+}
+
+.order-status.confirmed {
+    background-color: rgba(13, 202, 240, 0.1);
+    color: var(--info-color);
+}
+
+.order-status.processing {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: var(--primary-color);
+}
+
+.order-status.shipped {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: var(--secondary-color);
+}
+
+.order-status.delivered {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: var(--success-color);
+}
+
+.order-status.cancelled {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--danger-color);
+}
+
+/* صفحة المفضلة */
+.wishlist-item {
+    border: 1px solid var(--secondary-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* صفحة البحث */
+.search-filters {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* صفحة نتائج البحث */
+.search-result {
+    border-bottom: 1px solid var(--secondary-color);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* صفحة الخطأ */
+.error-page {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.error-page h1 {
+    font-size: 6rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* صفحة الاتصال بنا */
+.contact-form {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* صفحة عن المتجر */
+.about-section {
+    padding: 2rem 0;
+}
+
+/* صفحة الأسئلة الشائعة */
+.accordion-button:not(.collapsed) {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: var(--primary-color);
+}
+
+/* صفحة سياسة الخصوصية */
+.privacy-section {
+    padding: 2rem 0;
+}
+
+/* صفحة شروط الاستخدام */
+.terms-section {
+    padding: 2rem 0;
+}
+
+/* صفحة سياسة الإرجاع */
+.return-policy-section {
+    padding: 2rem 0;
+}
+
+/* استجابة للأجهزة المحمولة */
+@media (max-width: 767.98px) {
+    .hero-slide {
+        height: 300px !important;
+    }
+
+    .carousel-caption {
+        padding: 1rem;
+    }
+
+    .carousel-caption h1 {
+        font-size: 1.5rem;
+    }
+
+    .category-card img,
+    .product-card img {
+        height: 150px;
+    }
+
+    .cart-item-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* تأثيرات حركية */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+/* تحسينات إمكانية الوصول */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* تحسينات الطباعة */
+@media print {
+    .navbar,
+    .footer,
+    .btn,
+    .pagination {
+        display: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .product-card,
+    .cart-item {
+        break-inside: avoid;
+    }
+}
